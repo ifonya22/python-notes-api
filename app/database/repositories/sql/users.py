@@ -17,16 +17,20 @@ class SQLUserRepositoryImpl(UserRepository):
     async def get_by_username(self, username: str) -> Optional[UserInDBDTO]:
         result = await self.session.execute(select(User).where(User.username == username))
         user = result.scalars().first()
-        role = await self.session.get(Role, user.role_id)
-        if user:
-            return UserInDBDTO(
-                id=user.id,
-                username=user.username,
-                password=user.password,
-                role=role.name,
-                is_active=user.is_active,
-            )
-        return None
+        if not user:
+            return None
+
+        role: Optional[Role] = await self.session.get(Role, user.role_id)
+        if not role:
+            return None
+
+        return UserInDBDTO(
+            id=user.id,
+            username=user.username,
+            password=user.password,
+            role=role.name,
+            is_active=user.is_active,
+        )
 
     async def create(self, user_data: CreateUserDTO) -> UserSuccesCreatedDTO:
         try:
@@ -41,18 +45,23 @@ class SQLUserRepositoryImpl(UserRepository):
             await self.session.commit()
             await self.session.refresh(db_user)
             role = await self.session.get(Role, db_user.role_id)
-            if role:
-                return UserSuccesCreatedDTO(
-                    id=db_user.id,
-                    username=db_user.username,
-                    role=role.name,
-                    is_active=db_user.is_active,
-                )
+            if not role:
+                raise ValueError("Role not found for existing user")
+            return UserSuccesCreatedDTO(
+                id=db_user.id,
+                username=db_user.username,
+                role=role.name,
+                is_active=db_user.is_active,
+            )
         except IntegrityError:
             await self.session.rollback()
             result = await self.session.execute(select(User).where(User.username == user_data.username))
             existing_user = result.scalars().first()
+            if not existing_user:
+                raise ValueError("User does not exist and could not be created")
 
-            if existing_user:
-                role = await self.session.get(Role, existing_user.role_id)
-                raise UserAlreadyExistExc
+            role = await self.session.get(Role, existing_user.role_id)
+            if not role:
+                raise ValueError("Role not found for existing user")
+
+            raise UserAlreadyExistExc

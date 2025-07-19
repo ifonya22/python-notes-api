@@ -78,11 +78,16 @@ async def get_current_auth_user(
     db_factory: RepositoryDBFactory = Depends(get_repository_db_factory),
 ) -> UserInDBDTO:
     username = payload.get("sub")
-    if isinstance(username, str):
-        user = await db_factory.get_sql_user_repository().get_by_username(username)
-        if not user:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
-        return user
+
+    if not isinstance(username, str):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username in token")
+
+    user = await db_factory.get_sql_user_repository().get_by_username(username)
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+
+    return user
 
 
 def get_current_active_auth_user(

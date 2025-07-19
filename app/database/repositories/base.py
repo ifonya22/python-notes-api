@@ -11,7 +11,7 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
-    async def create(self, user: CreateUserDTO) -> UserSuccesCreatedDTO:
+    async def create(self, user_data: CreateUserDTO) -> UserSuccesCreatedDTO:
         pass
 
 
@@ -45,5 +45,5 @@ class NoteRepository(ABC):
         pass
 
     @abstractmethod
-    async def update(self, note_id: PyObjectId, user_id: int, update_data: dict) -> bool:
+    async def update(self, note_id: PyObjectId, user_id: int, update_data: dict) -> dict[str, Any]:
         pass

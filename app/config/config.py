@@ -4,7 +4,6 @@ from pathlib import Path
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 
-
 logger = logging.getLogger("app")
 logger.setLevel(logging.INFO)
 file_handler = logging.FileHandler("app.log")
@@ -53,7 +52,15 @@ class NoteRulesSettings(BaseModel):
     body_max_lenght: int = 65536
 
 
-class MongoSettings(BaseModel): ...
+class MongoSettings(BaseModel):
+    login: str = "root"
+    password: str = "example"
+    host: str = "localhost"
+    port: int = 27017
+
+    @property
+    def mongo_uri(self) -> str:
+        return f"mongodb://{self.login}:{self.password}@{self.host}:{self.port}"
 
 
 class DevSettings(BaseSettings):
@@ -61,6 +68,7 @@ class DevSettings(BaseSettings):
     db: DatabaseSettings = DatabaseSettings()
     backend: BackendSettings = BackendSettings()
     note_rules: NoteRulesSettings = NoteRulesSettings()
+    mongo: MongoSettings = MongoSettings()
 
 
 class ProdSettings(BaseSettings): ...

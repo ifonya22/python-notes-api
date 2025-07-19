@@ -49,13 +49,14 @@ class NoteService:
 
         return NoteResponseAdminV1(**result)
 
-    async def get_all_notes_by_user_id(
-        self, user_id: int, is_admin: bool = False
-    ) -> list[NoteResponseV1] | list[NoteResponseAdminV1]:
+    async def get_all_notes_by_user_id(self, user_id: int) -> list[NoteResponseV1]:
         results = await self.note_repo.get_all_by_user_id(user_id=user_id)
-        if is_admin:
-            return [NoteResponseAdminV1(**result) for result in results]
+
         return [NoteResponseV1(**result) for result in results if not result["is_deleted"]]
+
+    async def get_all_notes_by_user_id_admin(self, user_id: int) -> list[NoteResponseAdminV1]:
+        results = await self.note_repo.get_all_by_user_id(user_id=user_id)
+        return [NoteResponseAdminV1(**result) for result in results]
 
     async def get_all_notes(self) -> list[NoteResponseAdminV1]:
         results = await self.note_repo.get_all()
@@ -65,16 +66,18 @@ class NoteService:
     async def delete_note_by_note_id_and_user_id(self, note_id: PyObjectId, user_id: int) -> bool:
         result = await self.note_repo.soft_delete(note_id, user_id)
         if not result:
-            raise HTTPException(status_code=401, detail=f"Note {result['note_id']} was not deleted!")
+            raise HTTPException(status_code=401, detail=f"Note {note_id} was not deleted!")
         return result
 
     async def restore_note_by_note_id(self, note_id: PyObjectId) -> bool:
         result = await self.note_repo.restore(note_id)
         if not result:
-            raise HTTPException(status_code=401, detail=f"Note {result['note_id']} was not restored!")
+            raise HTTPException(status_code=401, detail=f"Note {note_id} was not restored!")
         return result
 
-    async def update_note_by_id(self, note_id: PyObjectId, user_id: int, update_data: UpdateNoteRequestV1) -> bool:
+    async def update_note_by_id(
+        self, note_id: PyObjectId, user_id: int, update_data: UpdateNoteRequestV1
+    ) -> NoteResponseV1:
         result = await self.note_repo.update(note_id, user_id, update_data.model_dump(exclude_unset=True))
         if not result:
             raise HTTPException(status_code=401, detail=f"Note {result['note_id']} was not restored!")

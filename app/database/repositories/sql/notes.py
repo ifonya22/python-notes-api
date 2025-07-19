@@ -9,7 +9,7 @@ class SQLNoteRepositoryImpl(NoteRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_all_by_user_id(self) -> list[dict]:
+    async def get_all_by_user_id(self, user_id: int) -> list[dict]:
         raise NotImplementedError
 
     async def get_by_note_id(self, note_id: str) -> Optional[dict]:

@@ -30,7 +30,7 @@ async def get_all_notes_by_user_id(
     note_service: NoteService = Depends(get_mongo_note_service),
 ) -> list[NoteResponseAdminV1]:
     logger.info(f"[{current_user.role} (id: {current_user.id})] Запрашивает все заметки пользователя ID: {user_id}")
-    result = await note_service.get_all_notes_by_user_id(user_id=user_id, is_admin=True)
+    result: list[NoteResponseAdminV1] = await note_service.get_all_notes_by_user_id_admin(user_id=user_id)
     logger.info(
         f"[{current_user.role} (id: {current_user.id})] Получил все заметки пользователя ID: {user_id} (всего: {len(result)})"
     )
