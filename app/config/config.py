@@ -1,7 +1,21 @@
+import logging
 from pathlib import Path
 
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
+
+
+logger = logging.getLogger("app")
+logger.setLevel(logging.INFO)
+file_handler = logging.FileHandler("app.log")
+logger.addHandler(file_handler)
+console_handler = logging.StreamHandler()
+logger.addHandler(console_handler)
+
+
+def get_logger():
+    return logger
+
 
 BASE_DIR = Path(__file__).parent.parent
 

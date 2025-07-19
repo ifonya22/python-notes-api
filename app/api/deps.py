@@ -8,6 +8,7 @@ from fastapi.security import OAuth2PasswordBearer
 from pymongo import MongoClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_logger
 from app.database.factory import RepositoryDBFactory
 from app.database.mongo.client import get_mongo_db
 from app.database.sql.session import get_sql_session
@@ -15,6 +16,8 @@ from app.schemas.users import UserInDBDTO
 from app.services.auth import utils as auth_utils
 from app.services.notes.notes import NoteService
 from app.services.users.users import UserService
+
+logger = get_logger()
 
 
 def get_repository_db_factory(
@@ -93,6 +96,9 @@ def get_current_active_auth_user(
 def role_required(*allowed_roles):
     def dependency(current_user: UserInDBDTO = Depends(get_current_active_auth_user)) -> UserInDBDTO:
         if current_user.role not in allowed_roles:
+            logger.warning(
+                f"[{current_user.role} (id: {current_user.id})] Попытался получить доступ без роли {allowed_roles}"
+            )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Access denied. Required role: {', '.join(allowed_roles)}",

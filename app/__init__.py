@@ -1,13 +1,12 @@
-import logging
 from contextlib import asynccontextmanager
-from typing import Callable
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI
 
 from app.api import api_router
+from app.config import get_logger
 from app.database.sql.session import init_db
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def get_app_prod():
@@ -24,11 +23,5 @@ def get_app_prod():
 
     app = FastAPI(lifespan=lifespan)
     app.include_router(api_router)
-
-    @app.middleware("http")
-    async def log_requests(request: Request, call_next: Callable) -> Response:
-        response = await call_next(request)
-        logger.warning(f"{request.method} {request.url} | {response.status_code}")
-        return response
 
     return app

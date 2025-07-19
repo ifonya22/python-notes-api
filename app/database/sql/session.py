@@ -6,7 +6,7 @@ from app.database.models.sql.base import Base
 
 DATABASE_URL = settings.db.database_url
 
-engine = create_async_engine(DATABASE_URL, echo=True)
+engine = create_async_engine(DATABASE_URL, echo=False)
 AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
