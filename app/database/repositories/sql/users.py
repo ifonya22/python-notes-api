@@ -1,0 +1,58 @@
+from typing import Optional
+
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+
+from app.database.models.sql.user import Role, User
+from app.database.repositories.base import UserRepository
+from app.exceptions import UserAlreadyExistExc
+from app.schemas.users import CreateUserDTO, UserInDBDTO, UserSuccesCreatedDTO
+
+
+class SQLUserRepositoryImpl(UserRepository):
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def get_by_username(self, username: str) -> Optional[UserInDBDTO]:
+        result = await self.session.execute(select(User).where(User.username == username))
+        user = result.scalars().first()
+        role = await self.session.get(Role, user.role_id)
+        if user:
+            return UserInDBDTO(
+                id=user.id,
+                username=user.username,
+                password=user.password,
+                role=role.name,
+                is_active=user.is_active,
+            )
+        return None
+
+    async def create(self, user_data: CreateUserDTO) -> UserSuccesCreatedDTO:
+        try:
+            db_user = User(
+                username=user_data.username,
+                password=user_data.password,
+                role_id=1,
+                is_active=user_data.is_active,
+            )
+
+            self.session.add(db_user)
+            await self.session.commit()
+            await self.session.refresh(db_user)
+            role = await self.session.get(Role, db_user.role_id)
+            if role:
+                return UserSuccesCreatedDTO(
+                    id=db_user.id,
+                    username=db_user.username,
+                    role=role.name,
+                    is_active=db_user.is_active,
+                )
+        except IntegrityError:
+            await self.session.rollback()
+            result = await self.session.execute(select(User).where(User.username == user_data.username))
+            existing_user = result.scalars().first()
+
+            if existing_user:
+                role = await self.session.get(Role, existing_user.role_id)
+                raise UserAlreadyExistExc
