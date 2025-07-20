@@ -1,5 +1,3 @@
-import datetime
-
 from fastapi import HTTPException
 
 from app.api.v1.notes.schemas import (
@@ -19,10 +17,6 @@ class NoteService:
     async def create_note(self, note: CreateNoteRequestV1, user_id: int) -> NoteResponseV1:
         doc = note.model_dump()
         doc["user_id"] = user_id
-        doc["is_deleted"] = False
-        doc["created_at"] = datetime.datetime.now(tz=datetime.UTC)
-        doc["updated_at"] = datetime.datetime.now(tz=datetime.UTC)
-
         result = await self.note_repo.create(doc)
 
         return NoteResponseV1(**result)
@@ -80,5 +74,5 @@ class NoteService:
     ) -> NoteResponseV1:
         result = await self.note_repo.update(note_id, user_id, update_data.model_dump(exclude_unset=True))
         if not result:
-            raise HTTPException(status_code=401, detail=f"Note {result['note_id']} was not restored!")
+            raise HTTPException(status_code=401, detail=f"Note {note_id} was not restored!")
         return NoteResponseV1(**result)

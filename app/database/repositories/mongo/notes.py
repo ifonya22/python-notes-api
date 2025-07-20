@@ -24,6 +24,10 @@ class MongoDBNoteRepositoryImpl(NoteRepository):
         return await self.collection.find_one({"_id": note_id, "user_id": user_id})
 
     async def create(self, note: dict) -> dict:
+        now = datetime.datetime.now(tz=datetime.UTC)
+        note["is_deleted"] = False
+        note["created_at"] = now
+        note["updated_at"] = now
         await self.collection.insert_one(note)
         return note
 
