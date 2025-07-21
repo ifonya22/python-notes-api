@@ -26,3 +26,11 @@ class UserService:
             return RegisterResponseV1.model_validate(db_user)
         except UserAlreadyExistExc:
             raise HTTPException(status_code=401, detail="User already exist")
+
+    async def switch_role(self, username: str, user_role: str):
+        result = "user"
+        if user_role == "admin":
+            result = await self.user_repo.set_user_role(username, "user")
+        elif user_role == "user":
+            result = await self.user_repo.set_user_role(username, "admin")
+        return result

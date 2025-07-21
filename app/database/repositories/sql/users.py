@@ -1,5 +1,6 @@
 from typing import Optional
 
+from sqlalchemy import update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -65,3 +66,19 @@ class SQLUserRepositoryImpl(UserRepository):
                 raise ValueError("Role not found for existing user")
 
             raise UserAlreadyExistExc
+
+    async def set_user_role(self, username: str, role_name: str) -> int:
+        result = await self.session.execute(select(Role).where(Role.name == role_name))
+        role = result.scalars().first()
+        if not role:
+            raise ValueError(f"Role '{role_name}' not found")
+
+        stmt = update(User).where(User.username == username).values(role_id=role.id)
+        result = await self.session.execute(stmt)
+
+        if result.rowcount == 0:
+            await self.session.rollback()
+            return 0
+
+        await self.session.commit()
+        return role.name

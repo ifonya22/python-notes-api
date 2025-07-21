@@ -55,7 +55,7 @@ class NoteRulesSettings(BaseModel):
 class MongoSettings(BaseModel):
     login: str = "root"
     password: str = "example"
-    host: str = "localhost"
+    host: str = "mongo"
     port: int = 27017
 
     @property

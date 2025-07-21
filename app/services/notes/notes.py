@@ -74,5 +74,5 @@ class NoteService:
     ) -> NoteResponseV1:
         result = await self.note_repo.update(note_id, user_id, update_data.model_dump(exclude_unset=True))
         if not result:
-            raise HTTPException(status_code=401, detail=f"Note {note_id} was not restored!")
+            raise HTTPException(status_code=401, detail=f"Note {note_id} was not updated!")
         return NoteResponseV1(**result)

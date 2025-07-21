@@ -1,3 +1,4 @@
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -18,4 +19,10 @@ async def get_sql_session():
 async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    # TODO: define roles
+        insert_roles_sql = """
+            INSERT INTO roles (name) 
+            VALUES ('user'), ('admin')
+            ON CONFLICT (name) DO NOTHING;
+        """
+
+        await conn.execute(text(insert_roles_sql))

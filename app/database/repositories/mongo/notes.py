@@ -50,7 +50,9 @@ class MongoDBNoteRepositoryImpl(NoteRepository):
 
         update_data["updated_at"] = datetime.datetime.now(tz=datetime.UTC)
 
-        result = await self.collection.update_one({"_id": note_id, "user_id": user_id}, {"$set": update_data})
+        result = await self.collection.update_one(
+            {"_id": note_id, "user_id": user_id, "is_deleted": False}, {"$set": update_data}
+        )
         if result.modified_count > 0:
             return await self.collection.find_one({"_id": note_id, "user_id": user_id})
         return {}

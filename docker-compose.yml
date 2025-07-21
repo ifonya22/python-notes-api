@@ -1,5 +1,13 @@
 services:
 
+  notes-app:
+    build:
+      context: .
+    image: notes-app:0.0.1
+    ports:
+      - ${BACKEND_OUTPUT_PORT}:8000
+    command: "uv run main.py"
+
   mongo:
     image: mongo
     restart: always

@@ -9,6 +9,7 @@ from app.api.deps import (
     get_sql_user_service,
     validate_auth_user,
 )
+from app.api.enums import Roles
 from app.services.auth import utils as auth_utils
 from app.services.users.users import UserService
 
@@ -38,3 +39,15 @@ def auth_user_check_self_info(
     user: UserResponseV1 = Depends(get_current_active_auth_user),
 ):
     return user
+
+
+@router.get("/example/switch-role")
+async def get_admins_rights(
+    current_user: UserInDBDTO = Depends(Roles.ALL_ROLES),
+    user_service: UserService = Depends(get_sql_user_service),
+):
+    role = await user_service.switch_role(user_role=current_user.role, username=current_user.username)
+    return {
+        "role_before": current_user.role,
+        "role_after": role,
+    }
