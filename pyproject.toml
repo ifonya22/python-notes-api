@@ -1,0 +1,27 @@
+[project]
+name = "gazprom-neft-test-repo"
+version = "0.1.0"
+description = "Тестовое задание"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiosqlite>=0.21.0",
+    "bcrypt>=4.3.0",
+    "fastapi>=0.116.1",
+    "motor>=3.7.1",
+    "pydantic-settings>=2.10.1",
+    "pydantic[email]>=2.11.7",
+    "pyjwt[crypto]>=2.10.1",
+    "pymongo>=4.13.2",
+    "python-multipart>=0.0.20",
+    "sqlalchemy>=2.0.41",
+    "uvicorn>=0.35.0",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.17.0",
+    "pytest>=8.4.1",
+    "pytest-asyncio>=1.1.0",
+    "ruff>=0.12.4",
+]
